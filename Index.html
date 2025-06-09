@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="os" dir="rtl">
+<html lang="ota" dir="rtl">
 <head>
-    <!-- Google tag (gtag.js) -->
+        <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1VDXKJM8YL"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -12,46 +12,44 @@
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تلخيص سؤال و جواب</title>
+    <title>تلخيص سواللری</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container" id="mainContainer">
-        <header>
-            <button id="darkModeToggle" class="mode-toggle">مظلم وضع</button>
-            <h1>تلخيص سؤال و جواب</h1>
-            <button class="toggle-sidebar" id="mainToggleSidebar">☰</button>
-        </header>
+    <header>
+        <button id="darkModeToggle" class="header-btn">مظلم وضع</button>
+        <h1 id="mainTitle">تلخيص سواللری</h1>
+        <button id="hamburgerBtn" class="header-btn">☰</button>
+    </header>
 
-        <nav class="sidebar" id="sidebar">
-            <div class="menu-content">
-                <h2>بابالر</h2>
+    <div class="container">
+        <aside id="sidebar">
+            <nav>
                 <button class="chapter-btn" data-chapter="مقدمه">مقدمه</button>
-                <button class="chapter-btn" data-chapter="فن_اول_علم_معاني">۱. فن؛ علمِ معانى</button>
-                <button class="chapter-btn" data-chapter="احوال_اسناد_خبري">احوالِ اسنادِ خبرى</button>
-                <button class="chapter-btn" data-chapter="احوال_مسند_اليه">احوالِ مسند اليه</button>
-                <button class="chapter-btn" data-chapter="احوال_مسند">احوالِ مسند</button>
-                <button class="chapter-btn" data-chapter="احوال_متعلقات_الفعل">احوالِ متعلقاتِ الفعل</button>
+                <button class="chapter-btn" data-chapter="۱. فن؛ علمِ معانى">۱. فن؛ علمِ معانى</button>
+                <button class="chapter-btn" data-chapter="احوالِ اسنادِ خبرى">احوالِ اسنادِ خبرى</button>
+                <button class="chapter-btn" data-chapter="احوالِ مسند اليه">احوالِ مسند اليه</button>
+                <button class="chapter-btn" data-chapter="احوال مسند">احوال مسند</button>
+                <button class="chapter-btn" data-chapter="اَحوالِ متعلِّقات الفعل">اَحوالِ متعلِّقات الفعل</button>
                 <button class="chapter-btn" data-chapter="قصر">قصر</button>
-                <button class="chapter-btn" data-chapter="انشاء">انشاء</button>
-                <button class="chapter-btn" data-chapter="فصل_وصل">فصل، وصل</button>
-                <button class="chapter-btn" data-chapter="ايجاز_اطناب_مساوات">ايجاز، اطناب، مساوات</button>
-                <hr class="menu-divider"> <button class="content-btn" data-type="ayat">آيةلر</button>
-                <button class="content-btn" data-type="beyit">أبيات</button>
-                <hr class="menu-divider">
-                <button id="randomAllBtn" class="chapter-btn">بتون سواللردن</button>
-            </div>
-        </nav>
+                <button class="chapter-btn" data-chapter="إنشاء">إنشاء</button>
+                <button class="chapter-btn" data-chapter="فصل، وصل">فصل، وصل</button>
+                <button class="chapter-btn" data-chapter="ايجاز، اطناب، مساوات">ايجاز، اطناب، مساوات</button>
+                <button class="chapter-btn" data-chapter="all">بتون سواللردن</button>
+            </nav>
+        </aside>
 
-        <main class="content" id="mainContent">
-            <div id="questionDisplay" class="question-box">
-                <p class="arabic-text">باب يوق ايسه، يان قولداكى بابالردن برينى سئچکز.</p>
-                <p class="arabic-text">سوال كلسون دييه، بتون سواللر طوگمەسينى باصڭ.</p>
+        <main id="mainContent">
+            <div id="questionContainer">
+                <p id="questionText">سوالی کورمک ایچون بر باب سچکز</p>
             </div>
-            <button id="showAnswerBtn" class="action-btn" style="display: none;">جوابى كوستر</button>
-            <button id="nextQuestionBtn" class="action-btn" style="display: none;">صكره كى سوال</button>
+            <div id="answerContainer" style="display: none;">
+                <p id="answerText"></p>
+            </div>
+            <div class="controls">
+                <button id="showAnswerBtn" disabled>جوابی کور</button>
+                <button id="nextQuestionBtn" disabled>ایلری</button>
+            </div>
         </main>
     </div>
 
