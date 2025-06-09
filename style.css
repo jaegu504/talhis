@@ -1,0 +1,633 @@
+@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap');
+
+:root {
+    /* Light Mode Colors - Dikembalikan ke Palet Asli Talhis */
+    --bg-color-light: #fdfaf6; /* Krem lembut */
+    --text-color-light: #36454f; /* Charcoal lembut */
+    --header-bg-light: #e0e6e6;
+    --sidebar-bg-light: #e6e6e6;
+    --button-bg-light: #b0c4b1; /* Hijau zaitun lembut */
+    --button-hover-bg-light: #9bb79c;
+    --button-text-light: #36454f;
+    --border-color-light: #c0c0c0;
+    --question-box-bg-light: rgba(255, 255, 255, 0.7);
+
+    /* Warna khusus untuk tombol Ayat, Bait, dan Semua Soal (bisa disamakan atau dibedakan) */
+    --special-button-bg-light: #a0b3a1; /* Sedikit lebih gelap dari tombol bab */
+    --special-button-text-light: #FFFFFF;
+    --special-button-hover-bg-light: #8c9f8d;
+
+
+    /* Dark Mode Colors - Dikembalikan ke Palet Asli Talhis */
+    --bg-color-dark: #2c3e50; /* Biru gelap */
+    --text-color-dark: #ecf0f1; /* Krem terang */
+    --header-bg-dark: #34495e;
+    --sidebar-bg-dark: #34495e;
+    --button-bg-dark: #5a7d7c; /* Hijau kebiruan tua */
+    --button-hover-bg-dark: #6b8d8c;
+    --button-text-dark: #ecf0f1;
+    --border-color-dark: #4a6279;
+    --question-box-bg-dark: rgba(0, 0, 0, 0.3);
+
+    --special-button-bg-dark: #4a6867;
+    --special-button-text-dark: #ecf0f1;
+    --special-button-hover-bg-dark: #597a79;
+
+
+    /* Common */
+    --font-arabic: 'Scheherazade New', 'Noto Sans Arabic', serif;
+    --font-latin: sans-serif;
+    --transition-speed: 0.3s;
+    --sidebar-width-desktop: 250px; /* Sesuai file CSS asli Anda */
+    --sidebar-width-tablet: 200px;  /* Sesuai file CSS asli Anda */
+    --sidebar-width-mobile: 75vw; 
+}
+
+body {
+    font-family: var(--font-arabic); 
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg-color-light);
+    color: var(--text-color-light);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+    overflow-x: hidden;
+    direction: rtl; 
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: var(--bg-color-dark);
+    color: var(--text-color-dark);
+}
+
+body.dark-mode .container { /* .container tidak ada di CSS asli, saya asumsikan #mainContainer */
+    background-color: var(--bg-color-dark);
+}
+
+body.dark-mode header {
+    background-color: var(--header-bg-dark);
+    border-bottom: 1px solid var(--border-color-dark);
+}
+body.dark-mode header h1 {
+    color: var(--text-color-dark); 
+}
+
+body.dark-mode .sidebar {
+    background-color: var(--sidebar-bg-dark);
+    border-left: 1px solid var(--border-color-dark); 
+}
+html[dir="ltr"].dark-mode .sidebar { 
+    border-right: 1px solid var(--border-color-dark);
+    border-left: none;
+}
+
+body.dark-mode .sidebar .chapter-btn, /* Menggunakan .chapter-btn dari HTML Anda */
+body.dark-mode .sidebar .content-btn { 
+    background-color: var(--button-bg-dark);
+    color: var(--button-text-dark);
+    border: 1px solid var(--border-color-dark);
+}
+
+body.dark-mode .sidebar .chapter-btn:hover,
+body.dark-mode .sidebar .content-btn:hover {
+    background-color: var(--button-hover-bg-dark);
+}
+
+body.dark-mode .sidebar #randomAllBtn, /* Tombol semua soal di dark mode */
+body.dark-mode .sidebar .content-btn[data-type="ayat"],
+body.dark-mode .sidebar .content-btn[data-type="beyit"] {
+    background-color: var(--special-button-bg-dark);
+    color: var(--special-button-text-dark);
+}
+
+
+body.dark-mode .action-btn,
+body.dark-mode .mode-toggle,
+body.dark-mode .toggle-sidebar {
+    background-color: var(--button-bg-dark);
+    color: var(--button-text-dark);
+    border: 1px solid var(--border-color-dark);
+}
+
+body.dark-mode .action-btn:hover,
+body.dark-mode .mode-toggle:hover,
+body.dark-mode .toggle-sidebar:hover {
+    background-color: var(--button-hover-bg-dark);
+}
+
+body.dark-mode .question-box {
+    background-color: var(--question-box-bg-dark);
+}
+
+body.dark-mode .question-box p,
+body.dark-mode .answer-text {
+    color: var(--text-color-dark);
+}
+
+/* Layout */
+.container { /* Menggunakan #mainContainer dari HTML Anda */
+    display: flex;
+    flex-grow: 1;
+    position: relative;
+    transition: margin-right var(--transition-speed); /* RTL: margin-right untuk push */
+    margin-right: var(--sidebar-width-desktop); /* Default margin untuk desktop sidebar (RTL) */
+}
+html[dir="ltr"] .container {
+    margin-left: var(--sidebar-width-desktop);
+    margin-right: 0;
+    transition: margin-left var(--transition-speed);
+}
+
+
+header {
+    position: fixed; 
+    top: 0;
+    right: 0; 
+    width: calc(100% - var(--sidebar-width-desktop)); /* Header width adjusts to sidebar (RTL) */
+    background-color: var(--header-bg-light);
+    padding: 15px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color-light);
+    transition: background-color var(--transition-speed), border-color var(--transition-speed), width var(--transition-speed), right var(--transition-speed);
+    z-index: 100;
+    box-sizing: border-box;
+}
+html[dir="ltr"] header {
+    left: 0;
+    right: auto;
+    width: calc(100% - var(--sidebar-width-desktop));
+    transition: background-color var(--transition-speed), border-color var(--transition-speed), width var(--transition-speed), left var(--transition-speed);
+}
+
+
+header h1 {
+    margin: 0 auto; 
+    font-size: 1.8em;
+    color: var(--text-color-light); 
+    font-family: var(--font-arabic);
+    text-align: center;
+    flex-grow: 1; 
+}
+
+.mode-toggle { /* Tombol Dark Mode */
+    background-color: var(--button-bg-light);
+    color: var(--button-text-light);
+    border: 1px solid var(--border-color-light);
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color var(--transition-speed), color var(--transition-speed), border-color var(--transition-speed);
+    font-family: var(--font-arabic);
+    order: -1; /* RTL: Kiri */
+}
+html[dir="ltr"] .mode-toggle {
+    order: 1; /* LTR: Kanan */
+}
+
+
+.mode-toggle:hover {
+    background-color: var(--button-hover-bg-light);
+}
+
+/* Sidebar Styling (Menggunakan .sidebar dari HTML Anda) */
+.sidebar {
+    width: var(--sidebar-width-desktop);
+    background-color: var(--sidebar-bg-light);
+    padding: 0; /* Padding diatur oleh .menu-content */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* RTL: shadow di kiri */
+    position: fixed;
+    height: 100vh;
+    top: 0;
+    right: 0; /* RTL: Fixed di kanan */
+    transform: translateX(0); 
+    transition: transform var(--transition-speed), background-color var(--transition-speed), border-color var(--transition-speed), right var(--transition-speed), left var(--transition-speed);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 999;
+    border-left: 1px solid var(--border-color-light); /* RTL */
+    overflow-y: auto; 
+    box-sizing: border-box;
+}
+html[dir="ltr"] .sidebar {
+    left: 0;
+    right: auto;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid var(--border-color-light);
+    border-left: none;
+}
+
+.menu-content { 
+    padding-top: 80px; /* Ruang untuk header yang fixed */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+
+.sidebar h2 {
+    color: var(--text-color-light);
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    font-family: var(--font-arabic);
+}
+body.dark-mode .sidebar h2 {
+    color: var(--text-color-dark);
+}
+
+.sidebar .chapter-btn, .sidebar .content-btn {
+    display: block;
+    width: 90%;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    background-color: var(--button-bg-light);
+    color: var(--button-text-light);
+    border: 1px solid var(--border-color-light);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    text-align: right;
+    transition: background-color var(--transition-speed), color var(--transition-speed), border-color var(--transition-speed);
+    font-family: var(--font-arabic);
+}
+
+.sidebar .chapter-btn:hover, .sidebar .content-btn:hover {
+    background-color: var(--button-hover-bg-light);
+}
+
+.sidebar #randomAllBtn,
+.sidebar .content-btn[data-type="ayat"], 
+.sidebar .content-btn[data-type="beyit"] {
+    background-color: var(--special-button-bg-light); 
+    color: var(--special-button-text-light);
+}
+
+body.dark-mode .sidebar #randomAllBtn,
+body.dark-mode .sidebar .content-btn[data-type="ayat"],
+body.dark-mode .sidebar .content-btn[data-type="beyit"] {
+    background-color: var(--special-button-bg-dark);
+    color: var(--special-button-text-dark);
+}
+
+.menu-divider {
+    width: 80%;
+    margin: 15px auto;
+    border: none;
+    border-top: 1px solid var(--border-color-light);
+}
+body.dark-mode .menu-divider {
+    border-top: 1px solid var(--border-color-dark);
+}
+
+/* Hamburger toggle di header (HTML Anda: .toggle-sidebar) */
+.toggle-sidebar {
+    background: none;
+    border: none;
+    font-size: 2em;
+    cursor: pointer;
+    color: var(--text-color-light); /* Menggunakan text color dari body */
+    z-index: 1001;
+    display: none; 
+    margin-left: auto; /* RTL: dorong ke kanan */
+}
+html[dir="ltr"] .toggle-sidebar {
+    margin-right: auto; /* LTR: dorong ke kiri */
+    margin-left: 0;
+}
+body.dark-mode .toggle-sidebar {
+    color: var(--text-color-dark);
+}
+
+/* Main Content Area (HTML Anda: .content) */
+.content {
+    flex-grow: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; 
+    padding-top: 80px; 
+    /* margin-right sudah diatur oleh .container untuk desktop */
+    transition: transform var(--transition-speed); /* Untuk push/slide di mobile */
+}
+
+
+.question-box { /* HTML Anda: #questionDisplay */
+    background-color: var(--question-box-bg-light);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    min-height: 150px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    max-width: 700px;
+    margin-bottom: 30px;
+    transition: background-color var(--transition-speed);
+}
+
+.question-box p {
+    font-size: 1.6em;
+    line-height: 1.6;
+    margin: 0;
+    color: var(--text-color-light);
+    transition: color var(--transition-speed);
+}
+
+.question-box p.arabic-text {
+    font-family: var(--font-arabic);
+}
+
+.answer-text {
+    margin-top: 15px;
+    font-size: 1.4em;
+    color: var(--text-color-light);
+    font-family: var(--font-arabic);
+}
+
+.action-btn {
+    background-color: var(--button-bg-light);
+    color: var(--button-text-light);
+    border: 1px solid var(--border-color-light);
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin: 10px;
+    transition: background-color var(--transition-speed), color var(--transition-speed), border-color var(--transition-speed);
+    font-family: var(--font-arabic);
+}
+
+.action-btn:hover {
+    background-color: var(--button-hover-bg-light);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); } 
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Responsive Design */
+
+/* Mobile Portrait (Max 768px) */
+@media (max-width: 768px) {
+    .container { /* #mainContainer */
+        margin-right: 0; /* RTL */
+        margin-left: 0; /* LTR */
+        /* transform diatur oleh .shifted */
+    }
+
+    header {
+        width: 100%; 
+        right: 0; 
+        left: auto;
+        padding: 10px 15px;
+        box-sizing: border-box; 
+    }
+    html[dir="ltr"] header {
+        left: 0;
+        right: auto;
+    }
+
+    header h1 {
+        font-size: 1.5em;
+    }
+
+    .mode-toggle {
+        font-size: 0.8em;
+        padding: 6px 12px;
+        margin-right: 5px; /* Jarak ke judul */
+    }
+    html[dir="ltr"] .mode-toggle {
+        margin-left: 5px;
+        margin-right: 0;
+    }
+
+    .toggle-sidebar { /* Tombol hamburger */
+        display: block; 
+        margin-left: 5px; /* RTL: Jarak ke judul */
+        padding: 0; 
+        background: none; 
+        border: none; 
+        color: var(--text-color-light); 
+    }
+    html[dir="ltr"] .toggle-sidebar {
+        margin-right: 5px;
+        margin-left: 0;
+    }
+    body.dark-mode .toggle-sidebar {
+        color: var(--text-color-dark);
+    }
+
+    .sidebar {
+        width: var(--sidebar-width-mobile); 
+        height: 100vh; 
+        position: fixed;
+        top: 0;
+        right: -100vw; /* Mulai dari luar layar (RTL) */
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.4); /* Shadow di kiri saat terbuka */
+        transform: translateX(0); 
+        transition: right var(--transition-speed) ease-out; 
+        z-index: 1000;
+        padding-top: 20px; /* Atur ulang padding atas */
+        border-left: none; 
+        border-right: 1px solid var(--border-color-light);
+    }
+    html[dir="ltr"] .sidebar {
+        left: -100vw;
+        right: auto;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.4);
+        transition: left var(--transition-speed) ease-out;
+        border-right: none;
+        border-left: 1px solid var(--border-color-light);
+    }
+
+    .sidebar.open {
+        right: 0; /* Slide in dari kanan (RTL) */
+    }
+    html[dir="ltr"] .sidebar.open {
+        left: 0; /* Slide in dari kiri (LTR) */
+    }
+    
+    /* Menggunakan .menu-content untuk padding atas yang benar di mobile */
+    .sidebar .menu-content {
+        padding-top: 60px; /* Sesuaikan dengan tinggi header di mobile */
+    }
+
+
+    .content { /* #mainContent */
+        margin-right: 0; 
+        margin-left:0;
+        padding: 20px;
+        padding-top: 80px; 
+        width: 100%;
+        min-height: calc(100vh - 80px); 
+        box-sizing: border-box; 
+        transition: transform var(--transition-speed); 
+    }
+
+    /* Efek push content saat sidebar terbuka di mobile */
+    .content.shifted { 
+        transform: translateX(calc(-1 * var(--sidebar-width-mobile))); /* RTL: dorong ke kiri */
+    }
+    html[dir="ltr"] .content.shifted {
+        transform: translateX(var(--sidebar-width-mobile)); /* LTR: dorong ke kanan */
+    }
+
+
+    .question-box {
+        width: 100%; 
+        max-width: none; 
+        padding: 20px;
+    }
+
+    .question-box p {
+        font-size: 1.3em;
+    }
+
+    .action-btn {
+        padding: 10px 20px;
+        font-size: 1em;
+    }
+    
+    /* Penyesuaian tata letak tombol kategori di mobile (grid 2 kolom) */
+    aside#sidebar nav { /* Menu di mobile */
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 8px; 
+        width: 100%; /* Pastikan grid mengambil lebar penuh dari .menu-content */
+        padding: 0 10px; /* Padding untuk grid di dalam .menu-content */
+        box-sizing: border-box;
+    }
+    
+    aside#sidebar .chapter-btn, aside#sidebar .content-btn { 
+        font-size: 0.9em; 
+        padding: 9px 10px;
+        margin-bottom: 0; 
+        width: 100%; /* Tombol mengambil lebar kolom grid */
+        box-sizing: border-box;
+    }
+
+    aside#sidebar #randomAllBtn { 
+        grid-column: 1 / -1; 
+        text-align: center;  
+        margin-top: 8px;    
+    }
+}
+
+/* Tablet Landscape (769px to 1024px) - Sidebar Fixed, Content Adjusted */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .container { /* #mainContainer */
+        margin-right: var(--sidebar-width-tablet); /* RTL */
+    }
+    html[dir="ltr"] .container {
+        margin-left: var(--sidebar-width-tablet);
+        margin-right: 0;
+    }
+
+    header {
+        right: var(--sidebar-width-tablet); /* RTL */
+        left: auto;
+        width: calc(100% - var(--sidebar-width-tablet));
+    }
+    html[dir="ltr"] header {
+        left: var(--sidebar-width-tablet);
+        right: auto;
+    }
+    header h1 {
+        font-size: 1.6em;
+    }
+
+    .mode-toggle {
+        font-size: 0.85em;
+    }
+
+    .toggle-sidebar {
+        display: none; 
+    }
+
+    .sidebar {
+        width: var(--sidebar-width-tablet); 
+        right: 0; /* RTL */
+        left: auto;
+        transform: translateX(0); 
+    }
+     html[dir="ltr"] .sidebar {
+        left: 0;
+        right: auto;
+    }
+
+    .sidebar .chapter-btn, .sidebar .content-btn {
+        font-size: 0.9em;
+        padding: 10px 12px;
+    }
+
+    .content { /* #mainContent */
+        margin-right: 0; /* Tidak perlu karena #mainContainer yang di-margin */
+        margin-left: 0;
+        padding: 30px;
+        padding-top: 90px; 
+        transform: translateX(0); 
+    }
+    
+    .question-box p {
+        font-size: 1.5em;
+    }
+}
+
+/* Desktop (min-width: 1025px) - Default behavior */
+@media (min-width: 1025px) {
+    .container { /* #mainContainer */
+        margin-right: var(--sidebar-width-desktop); /* RTL */
+    }
+     html[dir="ltr"] .container {
+        margin-left: var(--sidebar-width-desktop);
+        margin-right: 0;
+    }
+    header {
+        right: var(--sidebar-width-desktop); /* RTL */
+        left:auto;
+        width: calc(100% - var(--sidebar-width-desktop));
+    }
+    html[dir="ltr"] header {
+        left: var(--sidebar-width-desktop);
+        right:auto;
+    }
+    .toggle-sidebar {
+        display: none; 
+    }
+    .sidebar {
+        width: var(--sidebar-width-desktop);
+        right: 0; /* RTL */
+        left: auto;
+        transform: translateX(0); 
+    }
+    html[dir="ltr"] .sidebar {
+        left: 0;
+        right: auto;
+    }
+    .content { /* #mainContent */
+        margin-right: 0; 
+        margin-left: 0;
+        transform: translateX(0); 
+    }
+}
