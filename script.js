@@ -771,323 +771,198 @@ const questions = [
 
 
 const questionTextElement = document.getElementById('questionText');
-
 const answerTextElement = document.getElementById('answerText');
-
 const answerContainer = document.getElementById('answerContainer');
-
 const showAnswerBtn = document.getElementById('showAnswerBtn');
-
 const nextQuestionBtn = document.getElementById('nextQuestionBtn');
-
 const chapterBtns = document.querySelectorAll('.chapter-btn');
-
 const darkModeToggle = document.getElementById('darkModeToggle');
-
 const sidebar = document.getElementById('sidebar');
-
 const hamburgerBtn = document.getElementById('hamburgerBtn');
-
 const mainContent = document.getElementById('mainContent');
-
 const mainTitle = document.getElementById('mainTitle');
 
-
-
 let currentQuestions = [];
-
-let currentQuestionData = null; // Untuk menyimpan data pertanyaan saat ini (termasuk jawaban)
-
+let currentQuestionData = null;
 let originalTitle = mainTitle.textContent;
+let displayedQuestionIndices = []; 
 
-let displayedQuestionIndices = []; // Untuk melacak pertanyaan yang sudah ditampilkan dalam satu sesi bab
+// --- [REVISI] VARIABEL BARU UNTUK MODE PUTARAN BAB ---
+let isRoundRobinMode = false;
+let chapterQueue = [];
+let currentChapterIndexInQueue = 0;
+// --- AKHIR REVISI ---
 
+
+// --- [REVISI] FUNGSI BANTU BARU UNTUK MENGOCok ARRAY ---
+/**
+ * Mengocok elemen-elemen dalam sebuah array (Fisher-Yates shuffle).
+ * @param {Array} array Array yang ingin dikocok.
+ * @returns {Array} Array yang sama dengan elemen yang sudah teracak.
+ */
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+// --- AKHIR REVISI ---
 
 
 function getRandomQuestion() {
+    if (currentQuestions.length === 0) {
+        questionTextElement.textContent = "بو بابده سوال یوخدر.";
+        showAnswerBtn.disabled = true;
+        nextQuestionBtn.disabled = true;
+        return null;
+    }
 
-    if (currentQuestions.length === 0) {
+    if (displayedQuestionIndices.length === currentQuestions.length) {
+        displayedQuestionIndices = [];
+    }
 
-        questionTextElement.textContent = "بو بابده سوال یوخدر.";
-
-        showAnswerBtn.disabled = true;
-
-        nextQuestionBtn.disabled = true;
-
-        return null;
-
-    }
-
-
-
-    if (displayedQuestionIndices.length === currentQuestions.length) {
-
-        // Semua pertanyaan dalam bab ini sudah ditampilkan
-
-        // Bisa direset atau beri pesan, untuk sekarang kita reset agar bisa diulang
-
-        displayedQuestionIndices = [];
-
-    }
-
-
-
-    let randomIndex;
-
-    let questionCandidate;
-
-
-
-    do {
-
-        randomIndex = Math.floor(Math.random() * currentQuestions.length);
-
-        questionCandidate = currentQuestions[randomIndex];
-
-    } while (displayedQuestionIndices.includes(randomIndex) && displayedQuestionIndices.length < currentQuestions.length);
-
-    // Jika semua sudah ditampilkan dan direset, loop di atas akan keluar dengan pertanyaan acak baru
-
-    
-
-    displayedQuestionIndices.push(randomIndex);
-
-    return questionCandidate;
-
+    let randomIndex;
+    do {
+        randomIndex = Math.floor(Math.random() * currentQuestions.length);
+    } while (displayedQuestionIndices.includes(randomIndex));
+    
+    displayedQuestionIndices.push(randomIndex);
+    return currentQuestions[randomIndex];
 }
-
-
 
 function displayQuestion() {
+    answerContainer.style.display = 'none';
+    answerTextElement.textContent = ''; 
+    currentQuestionData = getRandomQuestion();
 
-    answerContainer.style.display = 'none';
-
-    answerTextElement.textContent = ''; // Kosongkan jawaban sebelumnya
-
-    currentQuestionData = getRandomQuestion();
-
-
-
-    if (currentQuestionData) {
-
-        questionTextElement.textContent = currentQuestionData.question;
-
-        // Jawaban tidak langsung ditampilkan di sini
-
-        showAnswerBtn.disabled = false;
-
-        nextQuestionBtn.disabled = false;
-
-    } else {
-
-        // Ini seharusnya sudah ditangani di getRandomQuestion, tapi sebagai fallback
-
-        questionTextElement.textContent = "سوال سچمک ایچون بر باب سچکز.";
-
-        showAnswerBtn.disabled = true;
-
-        nextQuestionBtn.disabled = true;
-
-    }
-
+    if (currentQuestionData) {
+        questionTextElement.textContent = currentQuestionData.question;
+        showAnswerBtn.disabled = false;
+        nextQuestionBtn.disabled = false;
+    } else {
+        questionTextElement.textContent = "سوال سچمک ایچون بر باب سچکز.";
+        showAnswerBtn.disabled = true;
+        nextQuestionBtn.disabled = true;
+    }
 }
 
+
+// --- [REVISI] FUNGSI BARU KHUSUS UNTUK MODE PUTARAN BAB ---
+function displayNextQuestionInQueue() {
+    answerContainer.style.display = 'none';
+    answerTextElement.textContent = '';
+
+    // Jika antrean habis, kocok ulang dan mulai dari awal
+    if (currentChapterIndexInQueue >= chapterQueue.length) {
+        shuffleArray(chapterQueue);
+        currentChapterIndexInQueue = 0;
+        console.log("Satu putaran selesai. Memulai putaran baru.");
+    }
+    
+    // Ambil bab berikutnya dari antrean
+    const nextChapter = chapterQueue[currentChapterIndexInQueue];
+    
+    // Dapatkan semua soal untuk bab tersebut
+    const questionsForThisChapter = questions.filter(q => q.chapter === nextChapter);
+    
+    // Pilih satu soal acak dari bab itu
+    const randomIndex = Math.floor(Math.random() * questionsForThisChapter.length);
+    currentQuestionData = questionsForThisChapter[randomIndex];
+
+    if (currentQuestionData) {
+        // Tampilkan nama bab di judul untuk kejelasan
+        mainTitle.textContent = `${originalTitle} - ${currentQuestionData.chapter}`;
+        questionTextElement.textContent = currentQuestionData.question;
+        showAnswerBtn.disabled = false;
+        nextQuestionBtn.disabled = false;
+    }
+
+    // Maju ke indeks berikutnya untuk klik selanjutnya
+    currentChapterIndexInQueue++;
+}
+// --- AKHIR REVISI ---
 
 
 showAnswerBtn.addEventListener('click', () => {
-
-    if (currentQuestionData) {
-
-        answerTextElement.textContent = currentQuestionData.answer;
-
-        answerContainer.style.display = 'block';
-
-    }
-
+    if (currentQuestionData) {
+        answerTextElement.textContent = currentQuestionData.answer;
+        answerContainer.style.display = 'block';
+    }
 });
 
 
-
+// --- [REVISI] LOGIKA TOMBOL "SELANJUTNYA" DIPERBARUI ---
 nextQuestionBtn.addEventListener('click', () => {
-
-    displayQuestion();
-
+    if (isRoundRobinMode) {
+        displayNextQuestionInQueue();
+    } else {
+        displayQuestion();
+    }
 });
-
+// --- AKHIR REVISI ---
 
 
 chapterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const chapterName = btn.getAttribute('data-chapter');
+        answerContainer.style.display = 'none';
+        answerTextElement.textContent = '';
+        
+        // --- [REVISI] LOGIKA PEMILIHAN BAB DIPERBARUI ---
+        if (chapterName === 'all') {
+            isRoundRobinMode = true; // Aktifkan mode putaran
+            
+            // Dapatkan semua nama bab yang unik dari data soal yang ada
+            const allChapters = [...new Set(questions.map(q => q.chapter))];
+            chapterQueue = shuffleArray(allChapters); // Kocok urutan bab
+            currentChapterIndexInQueue = 0; // Mulai dari awal antrean
 
-    btn.addEventListener('click', () => {
+            displayNextQuestionInQueue(); // Tampilkan soal pertama dari antrean
+        } else {
+            isRoundRobinMode = false; // Nonaktifkan mode putaran
+            displayedQuestionIndices = []; // Reset pelacak untuk bab tunggal
 
-        const chapterName = btn.getAttribute('data-chapter');
+            currentQuestions = questions.filter(q => q.chapter === chapterName);
+            mainTitle.textContent = originalTitle + " - " + chapterName;
+            
+            if (currentQuestions.length > 0) {
+                displayQuestion();
+            } else {
+                questionTextElement.textContent = "بو بابده هنوز سوال یوخدر.";
+                currentQuestionData = null;
+                showAnswerBtn.disabled = true;
+                nextQuestionBtn.disabled = true;
+            }
+        }
+        // --- AKHIR REVISI ---
 
-        answerContainer.style.display = 'none';
-
-        answerTextElement.textContent = '';
-
-        displayedQuestionIndices = []; // Reset pelacak pertanyaan saat ganti bab
-
-
-
-        if (chapterName === 'all') {
-
-            currentQuestions = [...questions]; // Salin semua pertanyaan
-
-            mainTitle.textContent = originalTitle + " - بتون سواللردن";
-
-        } else {
-
-            currentQuestions = questions.filter(q => q.chapter === chapterName);
-
-            mainTitle.textContent = originalTitle + " - " + chapterName;
-
-        }
-
-        
-
-        if (currentQuestions.length > 0) {
-
-            displayQuestion();
-
-        } else {
-
-            questionTextElement.textContent = "بو بابده هنوز سوال یوخدر.";
-
-            currentQuestionData = null;
-
-            showAnswerBtn.disabled = true;
-
-            nextQuestionBtn.disabled = true;
-
-        }
-
-
-
-        // Perilaku sidebar mobile: tetap terbuka setelah memilih bab.
-
-        // Penutupan eksplisit via hamburger atau klik di luar (sudah ditangani).
-
-        // Jika di desktop/tablet dan sidebar bisa ditoggle, ini bisa dipertimbangkan:
-
-        // if (window.innerWidth > 768 && sidebar.classList.contains('collapsible-sidebar-open')) {
-
-        //     // sidebar.classList.remove('collapsible-sidebar-open'); // Atau biarkan terbuka
-
-        // }
-
-    });
-
+        // Menutup menu mobile setelah memilih bab
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+        }
+    });
 });
 
 
-
-// Dark Mode
-
+// Dark Mode (Tidak ada perubahan)
 darkModeToggle.addEventListener('click', () => {
-
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-
-    if (currentTheme === 'dark') {
-
-        document.documentElement.setAttribute('data-theme', 'light');
-
-        darkModeToggle.textContent = "مظلم وضع";
-
-    } else {
-
-        document.documentElement.setAttribute('data-theme', 'dark');
-
-        darkModeToggle.textContent = "آیدینلق وضع";
-
-    }
-
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    if (currentTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        darkModeToggle.textContent = "مظلم وضع";
+    } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        darkModeToggle.textContent = "آیدینلق وضع";
+    }
 });
 
-
-
-// Sidebar Mobile Toggle
-
+// Sidebar Mobile Toggle (Tidak ada perubahan)
 hamburgerBtn.addEventListener('click', (event) => {
-
-    sidebar.classList.toggle('open');
-
-    event.stopPropagation(); 
-
+    sidebar.classList.toggle('open');
+    event.stopPropagation();  
 });
 
-
-
-// Penutupan sidebar mobile saat klik di luar area sidebar
-
-document.addEventListener('click', function(event) {
-
-    if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
-
-        const isClickInsideSidebar = sidebar.contains(event.target);
-
-        const isClickOnHamburger = hamburgerBtn.contains(event.target);
-
-
-
-        if (!isClickInsideSidebar && !isClickOnHamburger) {
-
-            sidebar.classList.remove('open');
-
-        }
-
-    }
-
-});
-
-
-
-// Inisialisasi tampilan awal
-
-document.addEventListener('DOMContentLoaded', () => {
-
-    // Set tema awal (misalnya, dari localStorage atau default ke light)
-
-    // Untuk kesederhanaan, kita default ke light.
-
-    document.documentElement.setAttribute('data-theme', 'light');
-
-    darkModeToggle.textContent = "مظلم وضع";
-
-    
-
-    questionTextElement.textContent = "بر باب سچڭ ویا \"بتون سواللردن\" دوکمەسنه باصڭ.";
-
-    showAnswerBtn.disabled = true;
-
-    nextQuestionBtn.disabled = true;
-
-
-
-    // Atur perilaku sidebar untuk desktop (selalu terlihat dan tidak overlay)
-
-    // CSS sudah menangani ini dengan position: sticky untuk sidebar
-
-    // dan flexbox untuk layout utama.
-
-    function adjustLayoutForDesktop() {
-
-        if (window.innerWidth > 768) {
-
-            sidebar.classList.remove('open'); // Pastikan tidak ada sisa class 'open' dari mobile
-
-        }
-
-    }
-
-    
-
-    window.addEventListener('resize', adjustLayoutForDesktop);
-
-    adjustLayoutForDesktop(); // Panggil saat load
-
-});
-// Penutupan sidebar mobile saat klik di luar area sidebar
 document.addEventListener('click', function(event) {
     if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
         const isClickInsideSidebar = sidebar.contains(event.target);
@@ -1097,4 +972,23 @@ document.addEventListener('click', function(event) {
             sidebar.classList.remove('open');
         }
     }
+});
+
+// Inisialisasi tampilan awal (Tidak ada perubahan signifikan)
+document.addEventListener('DOMContentLoaded', () => {
+    document.documentElement.setAttribute('data-theme', 'light');
+    darkModeToggle.textContent = "مظلم وضع";
+    
+    questionTextElement.textContent = "بر باب سچڭ ویا \"بتون سواللردن\" دوکمەسنه باصڭ.";
+    showAnswerBtn.disabled = true;
+    nextQuestionBtn.disabled = true;
+
+    function adjustLayoutForDesktop() {
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('open');
+        }
+    }
+    
+    window.addEventListener('resize', adjustLayoutForDesktop);
+    adjustLayoutForDesktop();
 });
