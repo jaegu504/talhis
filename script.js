@@ -785,20 +785,21 @@ const mainTitle = document.getElementById('mainTitle');
 let currentQuestions = [];
 let currentQuestionData = null;
 let originalTitle = mainTitle.textContent;
+
+// --- [REVISI FINAL] PENGELOLA STATUS ---
+// Untuk mode per bab (sistem lama)
 let displayedQuestionIndices = []; 
 
-// --- [REVISI] VARIABEL BARU UNTUK MODE PUTARAN BAB ---
+// Untuk mode "Seluruh Soal" (sistem baru)
 let isRoundRobinMode = false;
 let chapterQueue = [];
-let currentChapterIndexInQueue = 0;
+let chapterDecks = {}; // Menyimpan tumpukan soal yang sudah dikocok per bab
 // --- AKHIR REVISI ---
 
 
-// --- [REVISI] FUNGSI BANTU BARU UNTUK MENGOCok ARRAY ---
 /**
- * Mengocok elemen-elemen dalam sebuah array (Fisher-Yates shuffle).
+ * Fungsi bantu untuk mengocok array (Fisher-Yates shuffle).
  * @param {Array} array Array yang ingin dikocok.
- * @returns {Array} Array yang sama dengan elemen yang sudah teracak.
  */
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -807,21 +808,34 @@ function shuffleArray(array) {
     }
     return array;
 }
+
+// --- [REVISI FINAL] FUNGSI PERSIAPAN AWAL ---
+/**
+ * Membuat dan mengocok 'tumpukan kartu' soal untuk setiap bab.
+ * Dijalankan sekali saat aplikasi dimuat.
+ */
+function initializeDecks() {
+    const allChapters = [...new Set(questions.map(q => q.chapter))];
+    allChapters.forEach(chapter => {
+        const questionsForChapter = questions.filter(q => q.chapter === chapter);
+        chapterDecks[chapter] = {
+            questions: shuffleArray([...questionsForChapter]),
+            currentIndex: 0
+        };
+    });
+    console.log("Semua tumpukan bab sudah disiapkan dan dikocok.");
+}
 // --- AKHIR REVISI ---
 
 
+// Fungsi untuk mode LAMA (per bab)
 function getRandomQuestion() {
     if (currentQuestions.length === 0) {
-        questionTextElement.textContent = "بو بابده سوال یوخدر.";
-        showAnswerBtn.disabled = true;
-        nextQuestionBtn.disabled = true;
         return null;
     }
-
     if (displayedQuestionIndices.length === currentQuestions.length) {
-        displayedQuestionIndices = [];
+        displayedQuestionIndices = []; // Reset jika sudah habis
     }
-
     let randomIndex;
     do {
         randomIndex = Math.floor(Math.random() * currentQuestions.length);
@@ -831,6 +845,7 @@ function getRandomQuestion() {
     return currentQuestions[randomIndex];
 }
 
+// Fungsi untuk menampilkan soal di mode LAMA (per bab)
 function displayQuestion() {
     answerContainer.style.display = 'none';
     answerTextElement.textContent = ''; 
@@ -841,45 +856,52 @@ function displayQuestion() {
         showAnswerBtn.disabled = false;
         nextQuestionBtn.disabled = false;
     } else {
-        questionTextElement.textContent = "سوال سچمک ایچون بر باب سچکز.";
+        questionTextElement.textContent = "Semua soal di bab ini sudah ditanyakan. Silakan mulai lagi atau pilih bab lain.";
         showAnswerBtn.disabled = true;
-        nextQuestionBtn.disabled = true;
     }
 }
 
-
-// --- [REVISI] FUNGSI BARU KHUSUS UNTUK MODE PUTARAN BAB ---
-function displayNextQuestionInQueue() {
+// --- [REVISI FINAL] FUNGSI BARU UNTUK MODE "SELURUH SOAL" ---
+function displayNextFromRoundRobin() {
     answerContainer.style.display = 'none';
     answerTextElement.textContent = '';
 
-    // Jika antrean habis, kocok ulang dan mulai dari awal
-    if (currentChapterIndexInQueue >= chapterQueue.length) {
-        shuffleArray(chapterQueue);
-        currentChapterIndexInQueue = 0;
-        console.log("Satu putaran selesai. Memulai putaran baru.");
+    // Cek apakah semua soal dari semua bab sudah habis
+    const allDone = Object.values(chapterDecks).every(deck => deck.currentIndex >= deck.questions.length);
+    if (allDone) {
+        mainTitle.textContent = originalTitle;
+        questionTextElement.textContent = "Luar biasa! Semua 143 soal sudah selesai ditanyakan. Klik 'Seluruh Soal' lagi untuk memulai dari awal.";
+        showAnswerBtn.disabled = true;
+        nextQuestionBtn.disabled = true;
+        isRoundRobinMode = false; // Keluar dari mode
+        return;
     }
     
-    // Ambil bab berikutnya dari antrean
-    const nextChapter = chapterQueue[currentChapterIndexInQueue];
-    
-    // Dapatkan semua soal untuk bab tersebut
-    const questionsForThisChapter = questions.filter(q => q.chapter === nextChapter);
-    
-    // Pilih satu soal acak dari bab itu
-    const randomIndex = Math.floor(Math.random() * questionsForThisChapter.length);
-    currentQuestionData = questionsForThisChapter[randomIndex];
+    let nextChapter;
+    let deck;
 
-    if (currentQuestionData) {
-        // Tampilkan nama bab di judul untuk kejelasan
-        mainTitle.textContent = `${originalTitle} - ${currentQuestionData.chapter}`;
-        questionTextElement.textContent = currentQuestionData.question;
-        showAnswerBtn.disabled = false;
-        nextQuestionBtn.disabled = false;
+    // Cari bab berikutnya di antrean yang soalnya belum habis
+    while (true) {
+        if (chapterQueue.length === 0) { // Jika antrean bab habis, buat baru
+             const availableChapters = Object.keys(chapterDecks).filter(ch => chapterDecks[ch].currentIndex < chapterDecks[ch].questions.length);
+             chapterQueue = shuffleArray(availableChapters);
+        }
+        
+        nextChapter = chapterQueue.shift(); // Ambil dan hapus bab pertama dari antrean
+        deck = chapterDecks[nextChapter];
+
+        if (deck && deck.currentIndex < deck.questions.length) {
+            break; // Ditemukan bab yang valid
+        }
     }
+    
+    currentQuestionData = deck.questions[deck.currentIndex];
+    deck.currentIndex++; // Pindahkan penanda ke kartu berikutnya
 
-    // Maju ke indeks berikutnya untuk klik selanjutnya
-    currentChapterIndexInQueue++;
+    mainTitle.textContent = `${originalTitle} - ${currentQuestionData.chapter}`;
+    questionTextElement.textContent = currentQuestionData.question;
+    showAnswerBtn.disabled = false;
+    nextQuestionBtn.disabled = false;
 }
 // --- AKHIR REVISI ---
 
@@ -891,17 +913,13 @@ showAnswerBtn.addEventListener('click', () => {
     }
 });
 
-
-// --- [REVISI] LOGIKA TOMBOL "SELANJUTNYA" DIPERBARUI ---
 nextQuestionBtn.addEventListener('click', () => {
     if (isRoundRobinMode) {
-        displayNextQuestionInQueue();
+        displayNextFromRoundRobin();
     } else {
         displayQuestion();
     }
 });
-// --- AKHIR REVISI ---
-
 
 chapterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -909,23 +927,26 @@ chapterBtns.forEach(btn => {
         answerContainer.style.display = 'none';
         answerTextElement.textContent = '';
         
-        // --- [REVISI] LOGIKA PEMILIHAN BAB DIPERBARUI ---
+        // --- [REVISI FINAL] LOGIKA PEMILIHAN BAB ---
         if (chapterName === 'all') {
-            isRoundRobinMode = true; // Aktifkan mode putaran
+            isRoundRobinMode = true;
             
-            // Dapatkan semua nama bab yang unik dari data soal yang ada
-            const allChapters = [...new Set(questions.map(q => q.chapter))];
-            chapterQueue = shuffleArray(allChapters); // Kocok urutan bab
-            currentChapterIndexInQueue = 0; // Mulai dari awal antrean
+            // Reset semua tumpukan kartu untuk memulai sesi baru
+            Object.values(chapterDecks).forEach(deck => deck.currentIndex = 0);
+            
+            // Buat antrean bab awal
+            const allChapters = Object.keys(chapterDecks);
+            chapterQueue = shuffleArray(allChapters);
 
-            displayNextQuestionInQueue(); // Tampilkan soal pertama dari antrean
+            displayNextFromRoundRobin();
         } else {
-            isRoundRobinMode = false; // Nonaktifkan mode putaran
-            displayedQuestionIndices = []; // Reset pelacak untuk bab tunggal
-
-            currentQuestions = questions.filter(q => q.chapter === chapterName);
+            isRoundRobinMode = false;
             mainTitle.textContent = originalTitle + " - " + chapterName;
             
+            // Logika mode per bab (kembali ke sistem acak sederhana)
+            currentQuestions = questions.filter(q => q.chapter === chapterName);
+            displayedQuestionIndices = []; // Reset ingatan untuk bab ini
+
             if (currentQuestions.length > 0) {
                 displayQuestion();
             } else {
@@ -937,15 +958,13 @@ chapterBtns.forEach(btn => {
         }
         // --- AKHIR REVISI ---
 
-        // Menutup menu mobile setelah memilih bab
         if (window.innerWidth <= 768) {
             sidebar.classList.remove('open');
         }
     });
 });
 
-
-// Dark Mode (Tidak ada perubahan)
+// Dark Mode
 darkModeToggle.addEventListener('click', () => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     if (currentTheme === 'dark') {
@@ -957,7 +976,7 @@ darkModeToggle.addEventListener('click', () => {
     }
 });
 
-// Sidebar Mobile Toggle (Tidak ada perubahan)
+// Sidebar Mobile Toggle
 hamburgerBtn.addEventListener('click', (event) => {
     sidebar.classList.toggle('open');
     event.stopPropagation();  
@@ -974,8 +993,10 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Inisialisasi tampilan awal (Tidak ada perubahan signifikan)
+// Inisialisasi Tampilan Awal
 document.addEventListener('DOMContentLoaded', () => {
+    initializeDecks(); // Lakukan persiapan awal
+
     document.documentElement.setAttribute('data-theme', 'light');
     darkModeToggle.textContent = "مظلم وضع";
     
